@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JurisApp | Plataforma de Gestión Jurídica y Expedientes</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Work Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Work+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Work Sans', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              950: '#0B0D14',
+              900: '#0F172A',
+              800: '#1E293B',
+              700: '#1E3A8A',
+            },
+            gold: {
+              500: '#F59E0B',
+              600: '#D97706',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Custom scrollbar & smooth transitions */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+    .fade-in {
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media print {
+      body * { visibility: hidden; }
+      #printable-invoice, #printable-invoice * { visibility: visible; }
+      #printable-invoice {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white;
+        padding: 2rem;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#F1F5F9] text-slate-800 font-sans antialiased selection:bg-blue-900 selection:text-white">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ===================================================================== -->
+  <!-- 1. AUTHENTICATION VIEWS (LOGIN & REGISTER)                            -->
+  <!-- ===================================================================== -->
+  <div id="auth-wrapper" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#0B0D14] via-[#0F172A] to-[#1E3A8A]">
+    <div class="w-full max-w-md">
+      <!-- Brand Header -->
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-400/30 text-amber-400 mb-3 shadow-lg">
+          <i data-lucide="scale" class="w-8 h-8"></i>
+        </div>
+        <h1 class="text-3xl font-display font-bold text-white tracking-tight">Juris<span class="text-amber-400">App</span></h1>
+        <p class="text-slate-400 text-sm mt-1">Plataforma de Gestión Jurídica y Expedientes</p>
+      </div>
+
+      <!-- LOGIN CARD -->
+      <div id="login-card" class="bg-white rounded-2xl shadow-2xl border border-slate-200/80 p-6 sm:p-8 fade-in">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-slate-900">Iniciar sesión</h2>
+          <p class="text-xs text-slate-500 mt-1">Ingresa tus credenciales o selecciona un rol para la demostración</p>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Correo electrónico</label>
+            <div class="relative">
+              <i data-lucide="mail" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input type="email" id="login-email" value="audis.ospino@jurisapp.com" required
+                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:bg-white transition"
+                placeholder="usuario@jurisapp.com" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Contraseña</label>
+            <div class="relative">
+              <i data-lucide="lock" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input type="password" id="login-password" value="••••••••" minlength="6" required
+                class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:bg-white transition"
+                placeholder="Mínimo 8 caracteres" />
+              <button type="button" id="toggle-login-pwd" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Rol de usuario</label>
+            <div class="relative">
+              <i data-lucide="shield-check" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <select id="login-role"
+                class="w-full pl-10 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:bg-white transition appearance-none">
+                <option value="Administrador">Administrador (Firma Jurídica)</option>
+                <option value="Abogado">Abogado Litigante (Audis Ospino)</option>
+                <option value="Cliente">Cliente (Portal Juan Sebastián Osorio)</option>
+              </select>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            </div>
+          </div>
+
+          <button type="submit"
+            class="w-full py-3 px-4 bg-[#1E3A8A] hover:bg-blue-900 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 mt-2">
+            <span>Iniciar sesión</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </form>
+
+        <!-- Quick Demo Role Pills -->
+        <div class="mt-5 pt-4 border-t border-slate-100">
+          <p class="text-[11px] text-center text-slate-400 font-medium uppercase tracking-wider mb-2.5">Acceso rápido sustentación</p>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="quickLogin('Administrador')" class="py-1.5 px-2 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Admin</button>
+            <button type="button" onclick="quickLogin('Abogado')" class="py-1.5 px-2 text-xs font-medium rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1E3A8A] border border-blue-200 font-semibold transition">Audis Ospino</button>
+            <button type="button" onclick="quickLogin('Cliente')" class="py-1.5 px-2 text-xs font-medium rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition">Cliente</button>
+          </div>
+        </div>
+
+        <p class="text-center text-xs text-slate-500 mt-6">
+          ¿No tienes una cuenta?
+          <button type="button" onclick="toggleAuthView('register')" class="text-[#1E3A8A] font-semibold hover:underline ml-1">Regístrate aquí</button>
+        </p>
+      </div>
+
+      <!-- REGISTER CARD (Hidden by default) -->
+      <div id="register-card" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200/80 p-6 sm:p-8 fade-in">
+        <div class="mb-5">
+          <h2 class="text-xl font-bold text-slate-900">Crear cuenta</h2>
+          <p class="text-xs text-slate-500 mt-1">Registra un nuevo perfil en la plataforma JurisApp</p>
+        </div>
+
+        <form id="register-form" class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nombre completo</label>
+            <input type="text" id="reg-name" required placeholder="Ej. Audis Ospino"
+              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:bg-white transition" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Correo electrónico</label>
+            <input type="email" id="reg-email" required placeholder="correo@firma.com"
+              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:bg-white transition" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Contraseña</label>
+            <input type="password" id="reg-pass" required placeholder="Mínimo 8 caracteres"
+              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:bg-white transition" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Confirmar contraseña</label>
+            <input type="password" id="reg-pass-confirm" required placeholder="Repite tu contraseña"
+              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:bg-white transition" />
+          </div>
+
+          <button type="submit"
+            class="w-full py-3 px-4 bg-[#D97706] hover:bg-amber-700 text-white font-semibold rounded-xl shadow-md transition mt-2">
+            Registrarse
+          </button>
+        </form>
+
+        <p class="text-center text-xs text-slate-500 mt-5">
+          ¿Ya tienes una cuenta?
+          <button type="button" onclick="toggleAuthView('login')" class="text-[#1E3A8A] font-semibold hover:underline ml-1">Iniciar sesión</button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 2. MAIN WORKSPACE (ADMIN & LAWYER)                                    -->
+  <!-- ===================================================================== -->
+  <div id="workspace-app" class="hidden min-h-screen flex flex-col lg:flex-row">
+    <!-- Mobile Overlay -->
+    <div id="sidebar-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/60 z-30 hidden lg:hidden backdrop-blur-xs"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="main-sidebar" class="fixed lg:sticky top-0 left-0 z-40 h-screen w-64 bg-[#0B0D14] text-slate-300 flex flex-col justify-between transition-transform duration-300 -translate-x-full lg:translate-x-0 border-r border-slate-800/80 shrink-0">
+      <div>
+        <!-- Logo Header -->
+        <div class="h-16 px-5 flex items-center justify-between border-b border-slate-800/80">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-400">
+              <i data-lucide="scale" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <span class="font-display font-bold text-lg text-white tracking-tight">Juris<span class="text-amber-400">App</span></span>
+              <span class="block text-[10px] text-slate-400 -mt-1">LegalTech Suite</span>
+            </div>
+          </div>
+          <button onclick="toggleMobileSidebar()" class="lg:hidden text-slate-400 hover:text-white p-1">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-205px)]" id="sidebar-nav">
+          <button onclick="navigateTo('panel')" data-nav="panel" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition bg-[#1E3A8A] text-white shadow-sm">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>Panel de Control</span>
+          </button>
+          <button onclick="navigateTo('clientes')" data-nav="clientes" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>Clientes</span>
+          </button>
+          <button onclick="navigateTo('casos')" data-nav="casos" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+            <i data-lucide="briefcase" class="w-4 h-4"></i>
+            <span>Casos y Expedientes</span>
+          </button>
+          <button onclick="navigateTo('agenda')" data-nav="agenda" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+            <i data-lucide="calendar-days" class="w-4 h-4"></i>
+            <span>Agenda</span>
+          </button>
+          <button onclick="navigateTo('facturacion')" data-nav="facturacion" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+            <span>Facturación</span>
+          </button>
+          <button onclick="navigateTo('reportes')" data-nav="reportes" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+            <span>Reportes</span>
+          </button>
+          <button onclick="navigateTo('notificaciones')" data-nav="notificaciones" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+            <div class="flex items-center gap-3">
+              <i data-lucide="bell" class="w-4 h-4"></i>
+              <span>Notificaciones</span>
+            </div>
+            <span id="sidebar-notif-badge" class="px-2 py-0.5 text-[10px] font-bold bg-amber-500 text-slate-950 rounded-full">4</span>
+          </button>
+          <button onclick="navigateTo('seguridad')" data-nav="seguridad" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+            <i data-lucide="shield" class="w-4 h-4"></i>
+            <span>Seguridad</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Bottom User & Demo Switcher Card -->
+      <div class="p-3 border-t border-slate-800/80 bg-[#080A10]">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+          <div class="flex items-center gap-2.5 mb-2.5">
+            <div id="current-user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#1E3A8A] to-blue-500 text-white font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden border border-slate-700">
+              CS
+            </div>
+            <div class="min-w-0 flex-1">
+              <p id="current-user-name" class="text-xs font-semibold text-white truncate">Carlos Serrano</p>
+              <span id="current-user-role-badge" class="inline-block px-1.5 py-0.5 text-[10px] font-semibold bg-amber-500/20 text-amber-400 rounded mt-0.5">Administrador</span>
+            </div>
+          </div>
+
+          <!-- Quick Demo Role Selector -->
+          <div class="space-y-1.5">
+            <label class="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Cambiar vista (Demo)</label>
+            <select id="workspace-role-switcher" onchange="switchRoleFromWorkspace(this.value)"
+              class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-amber-400">
+              <option value="Administrador">Vista: Administrador</option>
+              <option value="Abogado">Vista: Abogado (Audis Ospino)</option>
+              <option value="Cliente">Vista: Portal Cliente</option>
+            </select>
+          </div>
+
+          <button onclick="logout()" class="mt-2.5 w-full py-1.5 px-2 rounded-lg text-xs text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition flex items-center justify-center gap-1.5">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <!-- Top Header -->
+      <header class="h-16 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <div>
+            <h1 id="page-title" class="text-lg sm:text-xl font-bold text-slate-900">Panel de Control</h1>
+            <p id="page-subtitle" class="text-xs text-slate-500 hidden sm:block">Resumen ejecutivo de actividad jurídica y términos procesales</p>
+          </div>
+        </div>
+
+        <!-- Global Search Bar -->
+        <div class="flex items-center gap-3">
+          <div class="relative w-48 sm:w-72 md:w-80">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="global-search-input" oninput="handleGlobalSearch(this.value)"
+              placeholder="Buscar expediente o cliente..."
+              class="w-full pl-9 pr-4 py-2 bg-slate-100 border border-transparent focus:border-slate-300 focus:bg-white rounded-full text-xs sm:text-sm focus:outline-none transition" />
+          </div>
+          <button onclick="navigateTo('notificaciones')" class="relative p-2 rounded-full text-slate-600 hover:bg-slate-100 transition" title="Notificaciones">
+            <i data-lucide="bell" class="w-5 h-5"></i>
+            <span class="w-2 h-2 bg-amber-500 rounded-full absolute top-1.5 right-1.5"></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Dynamic Views Container -->
+      <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+
+        <!-- =============================================================== -->
+        <!-- MODULE 1: PANEL DE CONTROL (DASHBOARD)                          -->
+        <!-- =============================================================== -->
+        <section id="view-panel" class="workspace-view space-y-6 fade-in">
+          <!-- 4 KPI Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div onclick="navigateTo('casos')" class="cursor-pointer bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-blue-300 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Casos activos</span>
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#1E3A8A] flex items-center justify-center group-hover:scale-105 transition">
+                  <i data-lucide="folder-open" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span id="kpi-active-cases" class="text-3xl font-display font-bold text-slate-900">12</span>
+                <span class="text-xs font-medium text-emerald-600">+2 este mes</span>
+              </div>
+            </div>
+
+            <div onclick="navigateTo('agenda')" class="cursor-pointer bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-amber-300 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Audiencias esta semana</span>
+                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition">
+                  <i data-lucide="gavel" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-3xl font-display font-bold text-slate-900">3</span>
+                <span class="text-xs font-medium text-slate-500">Programadas</span>
+              </div>
+            </div>
+
+            <div onclick="navigateTo('notificaciones')" class="cursor-pointer bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-rose-300 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Plazos próximos</span>
+                <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-105 transition">
+                  <i data-lucide="clock-alert" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-3xl font-display font-bold text-slate-900">5</span>
+                <span class="text-xs font-medium text-rose-600">2 críticos</span>
+              </div>
+            </div>
+
+            <div onclick="navigateTo('facturacion')" class="cursor-pointer bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-emerald-300 transition group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Facturado este mes</span>
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition">
+                  <i data-lucide="badge-dollar-sign" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-2xl font-display font-bold text-slate-900">$4.250.000</span>
+                <span class="text-xs font-semibold text-slate-500">COP</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Grid: Recent Cases Table + Right Widgets -->
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Left 2 Columns: Recent Cases -->
+            <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
+              <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 class="text-base font-bold text-slate-900">Expedientes y Casos Recientes</h2>
+                  <p class="text-xs text-slate-500">Seguimiento en tiempo real de procesos activos</p>
+                </div>
+                <button onclick="navigateTo('casos')" class="text-xs font-semibold text-[#1E3A8A] hover:underline flex items-center gap-1">
+                  <span>Ver tablero completo</span>
+                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      <th class="py-3 px-4">No. Expediente</th>
+                      <th class="py-3 px-4">Cliente</th>
+                      <th class="py-3 px-4">Tipo de Proceso</th>
+                      <th class="py-3 px-4">Estado</th>
+                      <th class="py-3 px-4 text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboard-cases-tbody" class="divide-y divide-slate-100 text-sm">
+                    <!-- Populated via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right Column: Upcoming Hearings & Alerts -->
+            <div class="space-y-6">
+              <!-- Próximas Audiencias -->
+              <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="calendar-clock" class="w-4 h-4 text-[#1E3A8A]"></i>
+                    <span>Próximas Audiencias</span>
+                  </h3>
+                  <button onclick="navigateTo('agenda')" class="text-xs text-[#1E3A8A] font-medium hover:underline">Agenda</button>
+                </div>
+
+                <div class="space-y-3">
+                  <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="w-12 h-12 rounded-xl bg-[#1E3A8A] text-white flex flex-col items-center justify-center shrink-0">
+                      <span class="text-sm font-bold leading-none">15</span>
+                      <span class="text-[10px] uppercase tracking-wider mt-0.5">Oct</span>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs font-bold text-slate-900 truncate">Audiencia Conciliación</p>
+                      <p class="text-[11px] text-slate-500 truncate">EXP-2026-112 • Restrepo G.</p>
+                      <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 mt-0.5">
+                        <i data-lucide="clock" class="w-3 h-3"></i> 09:00 AM
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="w-12 h-12 rounded-xl bg-slate-800 text-white flex flex-col items-center justify-center shrink-0">
+                      <span class="text-sm font-bold leading-none">18</span>
+                      <span class="text-[10px] uppercase tracking-wider mt-0.5">Oct</span>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs font-bold text-slate-900 truncate">Audiencia Inicial</p>
+                      <p class="text-[11px] text-slate-500 truncate">EXP-2026-089 • Audis Ospino</p>
+                      <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 mt-0.5">
+                        <i data-lucide="clock" class="w-3 h-3"></i> 11:30 AM
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="w-12 h-12 rounded-xl bg-slate-800 text-white flex flex-col items-center justify-center shrink-0">
+                      <span class="text-sm font-bold leading-none">22</span>
+                      <span class="text-[10px] uppercase tracking-wider mt-0.5">Oct</span>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs font-bold text-slate-900 truncate">Audiencia Pruebas</p>
+                      <p class="text-[11px] text-slate-500 truncate">EXP-2026-156 • Cárdenas A.</p>
+                      <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 mt-0.5">
+                        <i data-lucide="clock" class="w-3 h-3"></i> 03:30 PM
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Alertas de Vencimiento -->
+              <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2 mb-3.5">
+                  <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i>
+                  <span>Alertas de Vencimiento</span>
+                </h3>
+                <div class="space-y-2.5">
+                  <div class="p-3 rounded-xl bg-rose-50/80 border border-rose-200/80">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-bold text-rose-900">Contestación de Demanda</span>
+                      <span class="px-2 py-0.5 text-[10px] font-bold bg-rose-600 text-white rounded-full">2 días</span>
+                    </div>
+                    <p class="text-[11px] text-rose-700 mt-1">Vence en 2 días • <span class="font-semibold">EXP-2026-045</span></p>
+                  </div>
+
+                  <div class="p-3 rounded-xl bg-amber-50/80 border border-amber-200/80">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-bold text-amber-900">Recurso de Apelación</span>
+                      <span class="px-2 py-0.5 text-[10px] font-bold bg-amber-600 text-white rounded-full">4 días</span>
+                    </div>
+                    <p class="text-[11px] text-amber-800 mt-1">Vence en 4 días • <span class="font-semibold">EXP-2026-112</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- MODULE 2: GESTIÓN DE CLIENTES                                   -->
+        <!-- =============================================================== -->
+        <section id="view-clientes" class="workspace-view hidden space-y-6 fade-in">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <div class="flex flex-wrap items-center gap-3 flex-1">
+              <div class="relative flex-1 min-w-[220px] max-w-md">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input type="text" id="client-search" oninput="renderClientsTable()" placeholder="Filtrar por nombre, cédula/NIT o correo..."
+                  class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]" />
+              </div>
+              <select id="client-status-filter" onchange="renderClientsTable()"
+                class="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]">
+                <option value="Todos">Todos los estados</option>
+                <option value="Activo">Activos</option>
+                <option value="Inactivo">Inactivos</option>
+              </select>
+            </div>
+
+            <button onclick="openModal('modal-new-client')"
+              class="px-4 py-2.5 bg-[#D97706] hover:bg-amber-700 text-white text-sm font-semibold rounded-xl shadow-sm transition flex items-center justify-center gap-2 shrink-0">
+              <i data-lucide="user-plus" class="w-4 h-4"></i>
+              <span>+ Nuevo Cliente</span>
+            </button>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    <th class="py-3.5 px-5">Cliente / Razón Social</th>
+                    <th class="py-3.5 px-4">Cédula / NIT</th>
+                    <th class="py-3.5 px-4">Teléfono</th>
+                    <th class="py-3.5 px-4">Correo electrónico</th>
+                    <th class="py-3.5 px-4">Estado</th>
+                    <th class="py-3.5 px-5 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="clients-tbody" class="divide-y divide-slate-100 text-sm">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- MODULE 3: CASOS Y EXPEDIENTES (KANBAN + DETAIL TIMELINE)        -->
+        <!-- =============================================================== -->
+        <section id="view-casos" class="workspace-view hidden space-y-6 fade-in">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">Tablero de Expedientes</h2>
+              <p class="text-xs text-slate-500">Haz clic en cualquier expediente para inspeccionar su historial de actuaciones</p>
+            </div>
+            <button onclick="openModal('modal-new-case')"
+              class="px-4 py-2.5 bg-[#1E3A8A] hover:bg-blue-900 text-white text-sm font-semibold rounded-xl shadow-sm transition flex items-center gap-2">
+              <i data-lucide="folder-plus" class="w-4 h-4"></i>
+              <span>+ Nuevo Caso</span>
+            </button>
+          </div>
+
+          <!-- 4-Column Kanban Board -->
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4" id="kanban-board">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Selected Case Detail & Timeline -->
+          <div id="case-detail-panel" class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6">
+            <!-- Populated via JS -->
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- MODULE 4: AGENDA Y CALENDARIO DEL EQUIPO                        -->
+        <!-- =============================================================== -->
+        <section id="view-agenda" class="workspace-view hidden space-y-6 fade-in">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">Calendario del Equipo Jurídico</h2>
+              <p class="text-xs text-slate-500">Semana del 14 al 22 de Octubre, 2026 • Control de audiencias y citas</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="clear-lawyer-filter" onclick="filterAgendaByLawyer(null)" class="hidden px-3 py-2 text-xs font-semibold bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 transition">
+                Mostrar todos los abogados
+              </button>
+              <button onclick="openModal('modal-new-event')"
+                class="px-4 py-2.5 bg-[#D97706] hover:bg-amber-700 text-white text-sm font-semibold rounded-xl shadow-sm transition flex items-center gap-2">
+                <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                <span>+ Programar Cita o Audiencia</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Weekly Calendar Grid (2 cols) -->
+            <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-xs p-5">
+              <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <span class="text-sm font-bold text-slate-800">Octubre 2026</span>
+                <div class="flex items-center gap-3 text-[11px] font-medium">
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>Audiencia</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Cita cliente</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>Conciliación</span>
+                </div>
+              </div>
+
+              <div id="agenda-days-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+
+            <!-- Right Panel: Lawyer Availability -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5">
+              <h3 class="text-sm font-bold text-slate-900 mb-1">Disponibilidad de Abogados</h3>
+              <p class="text-xs text-slate-500 mb-4">Haz clic en un abogado para filtrar sus eventos</p>
+
+              <div id="lawyers-availability-list" class="space-y-2.5">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- MODULE 5: FACTURACIÓN Y CONTROL DE HORAS                        -->
+        <!-- =============================================================== -->
+        <section id="view-facturacion" class="workspace-view hidden space-y-6 fade-in">
+          <!-- 3 KPI Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Horas registradas</span>
+              <p class="text-3xl font-display font-bold text-slate-900 mt-2"><span id="total-billed-hours">42.8</span> <span class="text-base font-medium text-slate-500">hrs</span></p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Por facturar</span>
+              <p class="text-3xl font-display font-bold text-[#1E3A8A] mt-2">$18,4M <span class="text-base font-medium text-slate-500">COP</span></p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">IVA aplicado</span>
+              <p class="text-3xl font-display font-bold text-emerald-600 mt-2">19%</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Hours Log Table -->
+            <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+              <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-base font-bold text-slate-900">Registro de Horas</h3>
+                  <p class="text-xs text-slate-500">Selecciona o registra horas honorarios por abogado</p>
+                </div>
+                <button onclick="openModal('modal-new-hours')" class="px-3.5 py-2 bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-semibold rounded-xl transition">
+                  + Registrar Horas
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      <th class="py-3 px-4">Abogado</th>
+                      <th class="py-3 px-4">Caso / Cliente</th>
+                      <th class="py-3 px-4">Horas</th>
+                      <th class="py-3 px-4">Tarifa</th>
+                      <th class="py-3 px-4 text-right">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody id="billing-hours-tbody" class="divide-y divide-slate-100 text-sm">
+                    <!-- Populated via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Invoice Summary Card -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600">Pre-liquidación</span>
+                    <h3 class="text-base font-bold text-slate-900">Factura Constructora Aldea S.A.S.</h3>
+                  </div>
+                  <i data-lucide="file-text" class="w-5 h-5 text-slate-400"></i>
+                </div>
+
+                <div class="my-4 space-y-2.5 text-sm">
+                  <div class="flex justify-between text-slate-600">
+                    <span>Honorarios jurídicos (13.8h + servicios)</span>
+                    <span id="invoice-subtotal" class="font-semibold text-slate-900">$3.810.000</span>
+                  </div>
+                  <div class="flex justify-between text-slate-600">
+                    <span>IVA (19%)</span>
+                    <span id="invoice-iva" class="font-semibold text-slate-900">$723.900</span>
+                  </div>
+                  <div class="pt-3 border-t border-dashed border-slate-200 flex justify-between items-baseline">
+                    <span class="font-bold text-slate-900">Total a Pagar</span>
+                    <span id="invoice-total" class="text-xl font-display font-bold text-[#1E3A8A]">$4.533.900 COP</span>
+                  </div>
+                </div>
+              </div>
+
+              <button onclick="openInvoicePreview()"
+                class="w-full py-3 px-4 bg-[#D97706] hover:bg-amber-700 text-white font-semibold text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span>Generar PDF / Vista Previa</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- MODULE 6: REPORTES Y AUDITORÍA DEL SISTEMA                      -->
+        <!-- =============================================================== -->
+        <section id="view-reportes" class="workspace-view hidden space-y-6 fade-in">
+          <!-- Filters Bar -->
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700">
+                <i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i>
+                <span>01/09/2026 - 14/09/2026</span>
+              </div>
+              <select id="audit-role-filter" onchange="renderAuditTable()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700">
+                <option value="Todos">Rol: Todos</option>
+                <option value="Administrador">Administrador</option>
+                <option value="Usuario">Usuario</option>
+              </select>
+              <select id="audit-status-filter" onchange="renderAuditTable()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700">
+                <option value="Todos">Estado: Todos</option>
+                <option value="Exitoso">Verificado / Exitoso</option>
+                <option value="Denegado">Denegado</option>
+              </select>
+            </div>
+
+            <button onclick="exportAuditCSV()" class="px-4 py-2 bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Exportar Reporte CSV</span>
+            </button>
+          </div>
+
+          <!-- 4 Audit KPIs -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <span class="text-[11px] font-semibold uppercase text-slate-500">Total Intentos de Acceso</span>
+              <p class="text-2xl font-display font-bold text-slate-900 mt-1">1.452</p>
+              <span class="text-[11px] font-medium text-emerald-600">+12% vs mes anterior</span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <span class="text-[11px] font-semibold uppercase text-slate-500">Sesiones Administrador</span>
+              <p class="text-2xl font-display font-bold text-slate-900 mt-1">345</p>
+              <span class="text-[11px] font-medium text-slate-500">23.8% del total</span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <span class="text-[11px] font-semibold uppercase text-slate-500">Sesiones Usuario Común</span>
+              <p class="text-2xl font-display font-bold text-slate-900 mt-1">1.107</p>
+              <span class="text-[11px] font-medium text-slate-500">76.2% del total</span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <span class="text-[11px] font-semibold uppercase text-slate-500">Accesos Denegados</span>
+              <p class="text-2xl font-display font-bold text-rose-600 mt-1">42</p>
+              <span class="text-[11px] font-medium text-rose-600">2.8% tasa de error</span>
+            </div>
+          </div>
+
+          <!-- Detailed Audit Log Table -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div class="p-5 border-b border-slate-100">
+              <h3 class="text-base font-bold text-slate-900">Registro Detallado de Auditoría</h3>
+              <p class="text-xs text-slate-500">Trazabilidad de inicios de sesión e intentos de autenticación</p>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    <th class="py-3 px-4">ID Sesión</th>
+                    <th class="py-3 px-4">Usuario / Identificador</th>
+                    <th class="py-3 px-4">Rol Asignado</th>
+                    <th class="py-3 px-4">Interacción / Mecanismo</th>
+                    <th class="py-3 px-4">Fecha y Hora</th>
+                    <th class="py-3 px-4">Estado de Verificación</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-tbody" class="divide-y divide-slate-100 text-xs sm:text-sm">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- MODULE 7: NOTIFICACIONES                                        -->
+        <!-- =============================================================== -->
+        <section id="view-notificaciones" class="workspace-view hidden space-y-5 fade-in max-w-4xl">
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+            <div class="flex items-center gap-2">
+              <button onclick="filterNotifications('all')" id="notif-filter-all" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#1E3A8A] text-white transition">Todas</button>
+              <button onclick="filterNotifications('unread')" id="notif-filter-unread" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">No leídas</button>
+            </div>
+            <button onclick="markAllNotificationsRead()" class="text-xs font-semibold text-[#1E3A8A] hover:underline flex items-center gap-1.5">
+              <i data-lucide="check-check" class="w-4 h-4"></i>
+              <span>Marcar todas como leídas</span>
+            </button>
+          </div>
+
+          <div id="notifications-list" class="space-y-3">
+            <!-- Populated via JS -->
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- MODULE 8: SEGURIDAD (MATRIZ RBAC)                               -->
+        <!-- =============================================================== -->
+        <section id="view-seguridad" class="workspace-view hidden space-y-6 fade-in">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-slate-900">Matriz de Permisos por Rol (RBAC)</h2>
+                <p class="text-xs text-slate-500">Configura los privilegios de acceso y edición para cada perfil del sistema</p>
+              </div>
+              <button onclick="showToast('Política de seguridad RBAC actualizada correctamente', 'success')"
+                class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-2">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <span>Guardar Política de Seguridad</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-600">
+                    <th class="py-4 px-5">Módulo del Sistema</th>
+                    <th class="py-4 px-4">Administrador</th>
+                    <th class="py-4 px-4">Abogado</th>
+                    <th class="py-4 px-4">Cliente</th>
+                  </tr>
+                </thead>
+                <tbody id="rbac-tbody" class="divide-y divide-slate-100 text-sm">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 3. CLIENT PORTAL VIEW (DEDICATED EXPERIENCE)                         -->
+  <!-- ===================================================================== -->
+  <div id="client-portal-app" class="hidden min-h-screen flex flex-col lg:flex-row">
+    <!-- Client Sidebar -->
+    <aside class="w-full lg:w-64 bg-[#0B0D14] text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800">
+      <div>
+        <div class="h-16 px-5 flex items-center justify-between border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-400">
+              <i data-lucide="scale" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <span class="font-display font-bold text-lg text-white">Juris<span class="text-amber-400">App</span></span>
+              <span class="block text-[10px] text-amber-400 -mt-1 font-medium">Portal Cliente</span>
+            </div>
+          </div>
+        </div>
+
+        <nav class="p-3 flex lg:flex-col gap-1 overflow-x-auto">
+          <button onclick="switchClientTab('caso')" data-ctab="caso" class="ctab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium bg-[#1E3A8A] text-white shrink-0">
+            <i data-lucide="briefcase" class="w-4 h-4"></i>
+            <span>Mi Caso</span>
+          </button>
+          <button onclick="switchClientTab('documentos')" data-ctab="documentos" class="ctab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 shrink-0">
+            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+            <span>Documentos</span>
+          </button>
+          <button onclick="switchClientTab('facturas')" data-ctab="facturas" class="ctab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 shrink-0">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+            <span>Facturas</span>
+          </button>
+          <button onclick="switchClientTab('perfil')" data-ctab="perfil" class="ctab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 shrink-0">
+            <i data-lucide="user-circle" class="w-4 h-4"></i>
+            <span>Mi Perfil</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="p-3 border-t border-slate-800 bg-[#080A10]">
+        <button onclick="switchRoleFromWorkspace('Administrador')" class="w-full py-2 px-3 mb-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-semibold transition flex items-center justify-center gap-1.5">
+          <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+          <span>Volver a Vista Firma (Demo)</span>
+        </button>
+        <button onclick="logout()" class="w-full py-1.5 px-3 rounded-xl text-xs text-slate-400 hover:text-rose-400 transition flex items-center justify-center gap-1.5">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          <span>Cerrar sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Client Main Content -->
+    <main class="flex-1 p-5 sm:p-8 max-w-5xl mx-auto w-full space-y-6 fade-in">
+      <!-- Welcome Banner -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span class="inline-block px-2.5 py-0.5 text-[11px] font-semibold bg-blue-50 text-[#1E3A8A] rounded-full mb-2">Portal de Transparencia Jurídica</span>
+          <h1 class="text-xl sm:text-2xl font-display font-bold text-slate-900">Bienvenido, Juan Sebastián Osorio</h1>
+          <p class="text-sm text-slate-500 mt-0.5">Aquí puedes ver información actualizada de tus propios casos, documentos y facturas.</p>
+        </div>
+        <div class="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-100">
+          <div class="w-10 h-10 rounded-full bg-[#1E3A8A] text-white font-bold flex items-center justify-center">JO</div>
+          <div>
+            <p class="text-xs font-bold text-slate-900">CC 123456789</p>
+            <p class="text-[11px] text-slate-500">juanosorio13@gmail.com</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Case Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Expediente Asignado</span>
+            <h2 class="text-lg font-bold text-slate-900 mt-0.5">EXP-2026-045 — Restitución de inmueble</h2>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200">
+            Suspendido
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-sm">
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="text-xs text-slate-500 block">Abogado responsable</span>
+            <span class="font-bold text-slate-900 mt-0.5 block">Dra. García</span>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span class="text-xs text-slate-500 block">Última actuación registrada</span>
+            <span class="font-bold text-slate-900 mt-0.5 block">Contestación de demanda</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Authorized Documents & Invoices Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Documentos Autorizados -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+          <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i data-lucide="folder-lock" class="w-4 h-4 text-[#1E3A8A]"></i>
+            <span>Documentos Autorizados</span>
+          </h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                  <i data-lucide="file-text" class="w-4 h-4"></i>
+                </div>
+                <div class="truncate">
+                  <p class="text-xs font-bold text-slate-900 truncate">Contestacion_demanda.pdf</p>
+                  <p class="text-[11px] text-slate-500">PDF • 1.4 MB</p>
+                </div>
+              </div>
+              <button onclick="showToast('Descargando Contestacion_demanda.pdf...', 'success')" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-xs font-semibold text-slate-700 rounded-lg transition shrink-0">
+                Descargar
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                  <i data-lucide="file-text" class="w-4 h-4"></i>
+                </div>
+                <div class="truncate">
+                  <p class="text-xs font-bold text-slate-900 truncate">Poder_representacion.pdf</p>
+                  <p class="text-[11px] text-slate-500">PDF • 840 KB</p>
+                </div>
+              </div>
+              <button onclick="showToast('Descargando Poder_representacion.pdf...', 'success')" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-xs font-semibold text-slate-700 rounded-lg transition shrink-0">
+                Descargar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Facturas -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <i data-lucide="receipt" class="w-4 h-4 text-amber-600"></i>
+              <span>Facturas</span>
+            </h3>
+            <div class="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 flex items-center justify-between">
+              <div>
+                <span class="text-xs font-bold text-slate-900 block">Factura FA-2026-0398</span>
+                <span class="text-[11px] text-slate-600 block mt-0.5">Estado: Pendiente • Vence en 5 días hábiles</span>
+                <span class="text-sm font-bold text-[#1E3A8A] block mt-1">$1.450.000 COP</span>
+              </div>
+              <button onclick="showToast('Descargando Factura FA-2026-0398.pdf...', 'success')"
+                class="px-3.5 py-2 bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Descargar</span>
+              </button>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-4">¿Dudas sobre tu estado de cuenta? Contacta a tu abogado asignado.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODALS (NEW CLIENT, NEW CASE, NEW EVENT, NEW HOURS, INVOICE PREVIEW)  -->
+  <!-- ===================================================================== -->
+
+  <!-- Modal: Agregar Nuevo Cliente -->
+  <div id="modal-new-client" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden fade-in">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h3 class="text-base font-bold text-slate-900">Agregar nuevo cliente</h3>
+        <button onclick="closeModal('modal-new-client')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="form-new-client" class="p-6 space-y-5 max-h-[85vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#1E3A8A] border-b border-slate-100 pb-1">Datos personales</h4>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Nombre</label>
+              <input type="text" id="nc-nombre" required placeholder="Ej. Arturo" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Apellido</label>
+              <input type="text" id="nc-apellido" required placeholder="Ej. Cárdenas Ramírez" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Documento (Cédula / NIT)</label>
+              <input type="text" id="nc-doc" required placeholder="10994599488" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono</label>
+              <input type="text" id="nc-tel" required placeholder="3164329876" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico</label>
+              <input type="email" id="nc-email" required placeholder="cliente@correo.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-amber-600 border-b border-slate-100 pb-1">Datos comerciales</h4>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Compañía (Opcional)</label>
+              <input type="text" id="nc-company" placeholder="Ej. Transportes del Norte" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Cargo</label>
+              <input type="text" id="nc-role" placeholder="Ej. Gerente General" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Dirección</label>
+              <input type="text" id="nc-address" placeholder="Calle 45 # 23-12" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Estado</label>
+              <select id="nc-status" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex justify-end gap-2.5">
+          <button type="button" onclick="closeModal('modal-new-client')" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-[#1E3A8A] hover:bg-blue-900">Crear cliente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Agregar Nuevo Caso -->
+  <div id="modal-new-case" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden fade-in">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h3 class="text-base font-bold text-slate-900">Agregar nuevo caso / expediente</h3>
+        <button onclick="closeModal('modal-new-case')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="form-new-case" class="p-6 space-y-5 max-h-[85vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#1E3A8A] border-b border-slate-100 pb-1">Datos del cliente</h4>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Nombre completo / Razón social</label>
+              <input type="text" id="case-client" required placeholder="Ej. Arturo Cárdenas Ramírez" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Documento</label>
+              <input type="text" id="case-doc" required placeholder="10994599488" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Correo de notificación</label>
+              <input type="email" id="case-email" required placeholder="cliente@correo.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-amber-600 border-b border-slate-100 pb-1">Datos del proceso</h4>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">N° de Expediente</label>
+              <input type="text" id="case-code" required value="EXP-2026-198" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Tipo de caso</label>
+              <select id="case-type" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                <option value="Civil - Incumplimiento contractual">Civil - Incumplimiento contractual</option>
+                <option value="Comercial Ordinario">Comercial Ordinario</option>
+                <option value="Ejecutivo Singular">Ejecutivo Singular</option>
+                <option value="Laboral - Despido">Laboral - Despido</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Tribunal Asignado</label>
+              <input type="text" id="case-court" required placeholder="Juzgado 4 Civil del Circuito" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Abogado Asignado</label>
+              <select id="case-lawyer" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                <option value="Audis Ospino">Audis Ospino</option>
+                <option value="Dra. García">Dra. García</option>
+                <option value="Mateo Restrepo">Mateo Restrepo</option>
+                <option value="Diana Salazar">Diana Salazar</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex justify-end gap-2.5">
+          <button type="button" onclick="closeModal('modal-new-case')" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-[#1E3A8A] hover:bg-blue-900">Registrar Caso</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Programar Cita o Audiencia -->
+  <div id="modal-new-event" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden fade-in">
+      <div class="px-6 py-4 bg-[#1E3A8A] text-white flex items-center justify-between">
+        <h3 class="text-base font-bold">Programar cita o audiencia</h3>
+        <button onclick="closeModal('modal-new-event')" class="text-blue-200 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="form-new-event" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de evento</label>
+          <select id="ev-type" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium">
+            <option value="Audiencia">Audiencia Judicial</option>
+            <option value="Cita cliente">Cita cliente</option>
+            <option value="Conciliación">Conciliación</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Día / Fecha</label>
+            <select id="ev-day" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+              <option value="Lun 14">Lun 14 Oct</option>
+              <option value="Miér 16">Miér 16 Oct</option>
+              <option value="Vier 18">Vier 18 Oct</option>
+              <option value="Mar 22">Mar 22 Oct</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Hora</label>
+            <input type="time" id="ev-time" value="10:30" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Abogado asignado</label>
+          <select id="ev-lawyer" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+            <option value="Audis Ospino">Audis Ospino</option>
+            <option value="Mateo Restrepo">Mateo Restrepo</option>
+            <option value="Diana Salazar">Diana Salazar</option>
+            <option value="Pablo Vélez">Pablo Vélez</option>
+            <option value="José Mercado">José Mercado</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Lugar o enlace virtual</label>
+          <input type="text" id="ev-location" required placeholder="Sala 3 Paloquemao / Enlace Teams" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2.5">
+          <button type="button" onclick="closeModal('modal-new-event')" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-[#D97706] hover:bg-amber-700">Guardar cita</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Registrar Horas Facturables -->
+  <div id="modal-new-hours" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden fade-in">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h3 class="text-base font-bold text-slate-900">Registrar horas facturables</h3>
+        <button onclick="closeModal('modal-new-hours')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="form-new-hours" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Abogado</label>
+          <select id="hr-lawyer" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+            <option value="Audis Ospino">Audis Ospino</option>
+            <option value="Mateo Restrepo">Mateo Restrepo</option>
+            <option value="Diana Salazar">Diana Salazar</option>
+            <option value="Pablo Vélez">Pablo Vélez</option>
+            <option value="José Mercado">José Mercado</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Caso / Cliente</label>
+          <input type="text" id="hr-case" required placeholder="Ej. Constructora Aldea S.A.S." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Horas</label>
+            <input type="number" step="0.5" min="0.5" id="hr-amount" value="2.5" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Tarifa / Hora (COP)</label>
+            <input type="number" step="10000" id="hr-rate" value="180000" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-new-hours')" class="px-4 py-2 rounded-xl text-sm text-slate-600 bg-slate-100">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-[#1E3A8A]">Añadir registro</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Invoice PDF Preview -->
+  <div id="modal-invoice-preview" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden fade-in">
+      <div class="px-6 py-3 bg-slate-900 text-white flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wider text-amber-400">Vista Previa de Documento Electrónico</span>
+        <button onclick="closeModal('modal-invoice-preview')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="printable-invoice" class="p-6 sm:p-8 space-y-5 text-sm">
+        <div class="flex justify-between items-start border-b border-slate-200 pb-4">
+          <div>
+            <h2 class="text-xl font-display font-bold text-slate-900">Juris<span class="text-amber-600">App</span> Legal S.A.S.</h2>
+            <p class="text-xs text-slate-500">NIT 901.452.889-1 • Servicios Jurídicos Especializados</p>
+          </div>
+          <div class="text-right">
+            <span class="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold text-xs rounded-lg">FACTURA N° FA-2026-0412</span>
+            <p class="text-xs text-slate-500 mt-1">Fecha: 15 Oct 2026</p>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+          <p class="text-xs text-slate-500">Facturado a:</p>
+          <p class="font-bold text-slate-900">Constructora Aldea S.A.S.</p>
+          <p class="text-xs text-slate-600">Expediente: EXP-2026-001147 • Civil - Incumplimiento contractual</p>
+        </div>
+
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-500">
+              <th class="py-2">Concepto</th>
+              <th class="py-2 text-right">Valor</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr>
+              <td class="py-2.5">Honorarios profesionales representación judicial (13.8 hrs)</td>
+              <td class="py-2.5 text-right font-semibold">$2.760.000</td>
+            </tr>
+            <tr>
+              <td class="py-2.5">Gastos procesales y radicación de memoriales</td>
+              <td class="py-2.5 text-right font-semibold">$1.050.000</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="border-t border-slate-200 pt-3 space-y-1 text-right">
+          <p class="text-xs text-slate-600">Subtotal: <span class="font-semibold text-slate-900">$3.810.000 COP</span></p>
+          <p class="text-xs text-slate-600">IVA (19%): <span class="font-semibold text-slate-900">$723.900 COP</span></p>
+          <p class="text-base font-bold text-[#1E3A8A] pt-1">Total Factura: $4.533.900 COP</p>
+        </div>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+        <button onclick="closeModal('modal-invoice-preview')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-white border border-slate-200">Cerrar</button>
+        <button onclick="window.print()" class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#1E3A8A] hover:bg-blue-900 flex items-center gap-1.5">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span>Imprimir / Guardar PDF</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- JAVASCRIPT APPLICATION LOGIC & DATA STATE                             -->
+  <!-- ===================================================================== -->
+  <script>
+    /**
+     * Generates a clean inline SVG portrait for Audis Ospino so it always
+     * renders reliably inside any preview iframe without external asset errors.
+     */
+    function getAudisOspinoPortrait(sizeClass = 'w-10 h-10') {
+      return `
+        <svg viewBox="0 0 80 80" class="${sizeClass} rounded-full shrink-0 bg-slate-200" role="img" aria-label="Audis Ospino">
+          <defs>
+            <linearGradient id="aoBgGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#1E3A8A" />
+              <stop offset="100%" stop-color="#0F172A" />
+            </linearGradient>
+          </defs>
+          <rect width="80" height="80" rx="40" fill="url(#aoBgGrad)" />
+          <!-- Shoulders / Dark Charcoal Sweater -->
+          <path d="M16 74 C18 56, 29 50, 40 50 C51 50, 62 56, 64 74 Z" fill="#1E293B" />
+          <!-- Collar detail -->
+          <path d="M33 50 L40 57 L47 50" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" />
+          <!-- Neck -->
+          <rect x="35" y="42" width="10" height="10" rx="4" fill="#9C6B43" />
+          <!-- Head -->
+          <ellipse cx="40" cy="31" rx="13" ry="15" fill="#A6744B" />
+          <!-- Short buzzed / fade hair -->
+          <path d="M27 28 C27 17, 53 17, 53 28 C51 21, 29 21, 27 28 Z" fill="#1F2937" />
+          <!-- Brows & Eyes -->
+          <path d="M32 28 L37 28" stroke="#1E1B18" stroke-width="1.8" stroke-linecap="round" />
+          <path d="M43 28 L48 28" stroke="#1E1B18" stroke-width="1.8" stroke-linecap="round" />
+          <circle cx="35" cy="31" r="1.6" fill="#0F172A" />
+          <circle cx="45" cy="31" r="1.6" fill="#0F172A" />
+          <!-- Nose & Calm Expression -->
+          <path d="M40 30 L39.2 35 L41.5 35.5" fill="none" stroke="#7A502E" stroke-width="1.4" stroke-linecap="round" />
+          <path d="M36.5 39.5 Q40 41.5 43.5 39.5" fill="none" stroke="#6E4424" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+      `;
+    }
+
+    function getAvatarFallback(initials = 'AO', sizeClass = 'w-10 h-10') {
+      return `
+        <span class="${sizeClass} rounded-full bg-[#1E3A8A] text-white font-bold text-xs inline-flex items-center justify-center shrink-0">
+          ${initials}
+        </span>
+      `;
+    }
+
+    // -----------------------------------------------------------------------
+    // 1. APPLICATION STATE & MOCK DATA
+    // -----------------------------------------------------------------------
+    const state = {
+      currentRole: 'Administrador',
+      currentView: 'panel',
+      selectedCaseId: 'EXP-2026-001147',
+      selectedLawyerFilter: null,
+      notifFilter: 'all',
+
+      clients: [
+        { id: 1, name: 'Inversiones Bolívar S.A.S.', doc: '1099366453', phone: '318987654', email: 'inversionesb@gmail.com', status: 'Activo', company: 'Inversiones Bolívar S.A.S.' },
+        { id: 2, name: 'Silvia Fernanda Osorio', doc: '1099966337', phone: '3177736896', email: 'silviafernaalia@gmail.com', status: 'Activo', company: 'Independiente' },
+        { id: 3, name: 'Constructora El Poblado', doc: '1066980453', phone: '3183456565', email: 'constructora@gmail.com', status: 'Activo', company: 'Constructora El Poblado' },
+        { id: 4, name: 'Arturo Cárdenas Ramírez', doc: '10994599488', phone: '3164329876', email: 'arturo.cardenas@gmail.com', status: 'Activo', company: 'Transportes del Norte' },
+        { id: 5, name: 'Camilo Andrés Ramírez', doc: '1093456789', phone: '3154329876', email: 'camiloandres@gmail.com', status: 'Activo', company: 'Grupo Comercial' },
+        { id: 6, name: 'Juan Sebastián Osorio', doc: '123456789', phone: '31798452784', email: 'juanosorio13@gmail.com', status: 'Activo', company: 'Soluciones Tech' }
+      ],
+
+      cases: [
+        {
+          id: 'EXP-2026-089',
+          client: 'Inversiones Bolívar S.A.S.',
+          type: 'Comercial Ordinario',
+          status: 'En Trámite',
+          lawyer: 'Dra. García',
+          court: 'Juzgado 3 Civil del Circuito',
+          timeline: [
+            { title: 'Se radicó demanda ejecutiva', date: '10 sep 2026', author: 'Dra. García' },
+            { title: 'Auto admisorio de la demanda', date: '24 sep 2026', author: 'Juzgado 3 Civil' }
+          ]
+        },
+        {
+          id: 'EXP-2026-112',
+          client: 'Silvia Fernanda Osorio',
+          type: 'Sucesión Intestada',
+          status: 'Cerrado',
+          lawyer: 'Mateo Restrepo',
+          court: 'Juzgado 2 de Familia',
+          timeline: [
+            { title: 'Apertura de sucesión y avalúos', date: '12 ago 2026', author: 'Mateo Restrepo' },
+            { title: 'Sentencia aprobatoria de partición', date: '01 oct 2026', author: 'Juzgado 2 Familia' }
+          ]
+        },
+        {
+          id: 'EXP-2026-045',
+          client: 'Constructora El Poblado',
+          type: 'Restitución de Inmueble',
+          status: 'Abierto',
+          lawyer: 'Dra. García',
+          court: 'Juzgado 11 Civil Municipal',
+          timeline: [
+            { title: 'Presentación de demanda de restitución', date: '05 sep 2026', author: 'Dra. García' },
+            { title: 'Contestación de demanda recibida', date: '29 sep 2026', author: 'Contraparte' }
+          ]
+        },
+        {
+          id: 'EXP-2026-156',
+          client: 'Arturo Cárdenas Ramírez',
+          type: 'Ejecutivo Singular',
+          status: 'Suspendido',
+          lawyer: 'Diana Salazar',
+          court: 'Juzgado 5 Civil Municipal',
+          timeline: [
+            { title: 'Mandamiento de pago librado', date: '15 ago 2026', author: 'Diana Salazar' },
+            { title: 'Suspensión provisional por acuerdo de pago', date: '20 sep 2026', author: 'Juzgado 5 Civil' }
+          ]
+        },
+        {
+          id: 'EXP-2026-001147',
+          client: 'Constructora Aldea S.A.S.',
+          type: 'Civil - Incumplimiento contractual',
+          status: 'En Trámite',
+          lawyer: 'Audis Ospino',
+          court: 'Juzgado 1 Civil del Circuito',
+          timeline: [
+            { title: 'Se radicó demanda', date: '18 sep 2026', author: 'Audis Ospino' },
+            { title: 'Audiencia inicial programada', date: '2 oct 2026', author: 'Audis Ospino' }
+          ]
+        }
+      ],
+
+      events: [
+        { id: 1, day: 'Lun 14', time: '09:00', type: 'Audiencia', lawyer: 'Audis Ospino', location: 'Sala 2 - Juzgado Civil' },
+        { id: 2, day: 'Miér 16', time: '11:00', type: 'Cita cliente', lawyer: 'Diana Salazar', location: 'Oficina Principal / Meet' },
+        { id: 3, day: 'Vier 18', time: '14:00', type: 'Conciliación', lawyer: 'Pablo Vélez', location: 'Centro de Conciliación' },
+        { id: 4, day: 'Mar 22', time: '15:30', type: 'Cita cliente', lawyer: 'José Mercado', location: 'Videollamada Teams' }
+      ],
+
+      lawyers: [
+        { name: 'Audis Ospino', specialty: 'Derecho Civil y Comercial', status: 'Disponible' },
+        { name: 'Mateo Restrepo', specialty: 'Derecho Civil', status: 'Disponible' },
+        { name: 'Diana Salazar', specialty: 'Derecho Laboral', status: 'En audiencia' },
+        { name: 'Pablo Vélez', specialty: 'Derecho Comercial', status: 'Disponible' },
+        { name: 'José Mercado', specialty: 'Litigios y Contratos', status: 'Disponible' }
+      ],
+
+      billingHours: [
+        { lawyer: 'Audis Ospino', caseName: 'Constructora Aldea S.A.S.', hours: 13.8, rate: 200000 },
+        { lawyer: 'Mateo Restrepo', caseName: 'Secuestro', hours: 14.5, rate: 180000 },
+        { lawyer: 'Diana Salazar', caseName: 'Despido injustificado', hours: 8.0, rate: 160000 },
+        { lawyer: 'Pablo Vélez', caseName: 'Hotel Cumbre', hours: 6.5, rate: 150000 }
+      ],
+
+      auditLogs: [
+        { id: '#SEC-9843', user: 'audis.ospino@jurisapp.com', role: 'Administrador', action: 'Ingreso de contraseña admin', datetime: '14/09/2026 07:15 AM', status: 'Verificado / Exitoso', type: 'Exitoso' },
+        { id: '#SEC-9845', user: 'maribux@system.com', role: 'Usuario', action: 'Ingreso de contraseña usuario', datetime: '14/09/2026 07:18 AM', status: 'Verificado / Exitoso', type: 'Exitoso' },
+        { id: '#SEC-9839', user: 'intruso@netpirate.com', role: 'Usuario (Intentado)', action: 'Fallo verificación contraseña', datetime: '14/09/2026 08:55 AM', status: 'Denegado / Reintentar', type: 'Denegado' },
+        { id: '#SEC-9841', user: 'ana.gomez@system.com', role: 'Usuario', action: 'Ingreso de contraseña usuario', datetime: '14/09/2026 09:30 AM', status: 'Verificado / Exitoso', type: 'Exitoso' }
+      ],
+
+      notifications: [
+        { id: 1, title: 'Término procesal por vencer', desc: 'Vence en 2 días. Correo de alerta enviado al abogado responsable (EXP-2026-045).', priority: 'high', time: 'Hace 15 min', unread: true },
+        { id: 2, title: 'Audiencia de conciliación mañana a las 11:00 AM', desc: 'Recordatorio automático programado para el equipo jurídico.', priority: 'info', time: 'Hace 1 hora', unread: true },
+        { id: 3, title: 'Factura FA-2026-0398', desc: 'Vence en 5 días hábiles. Pendiente de confirmación de pago.', priority: 'warning', time: 'Hace 3 horas', unread: true },
+        { id: 4, title: 'Nuevo documento cargado en el expediente', desc: 'Se adjuntó Contestacion_demanda.pdf en EXP-2026-045.', priority: 'success', time: 'Ayer', unread: true }
+      ],
+
+      rbac: [
+        { module: 'Información jurídica del caso', admin: 'Ver / Editar', lawyer: 'Ver / Editar', client: 'Solo Ver' },
+        { module: 'Documentos del expediente', admin: 'Ver / Editar', lawyer: 'Ver / Editar', client: 'Ver (Autorizados)' },
+        { module: 'Facturación y honorarios', admin: 'Ver / Editar', lawyer: 'Solo Ver', client: 'Solo Ver' },
+        { module: 'Reportes financieros y auditoría', admin: 'Ver / Editar', lawyer: 'Sin Acceso', client: 'Sin Acceso' }
+      ]
+    };
+
+    // -----------------------------------------------------------------------
+    // 2. HELPERS & UI UTILITIES
+    // -----------------------------------------------------------------------
+    function formatCOP(num) {
+      return '$' + Math.round(num).toLocaleString('es-CO');
+    }
+
+    function getStatusBadge(status) {
+      const map = {
+        'Abierto': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        'Activo': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        'En Trámite': 'bg-blue-50 text-blue-700 border-blue-200',
+        'Suspendido': 'bg-rose-50 text-rose-700 border-rose-200',
+        'Inactivo': 'bg-rose-50 text-rose-700 border-rose-200',
+        'Cerrado': 'bg-slate-100 text-slate-700 border-slate-200'
+      };
+      const cls = map[status] || 'bg-slate-100 text-slate-700 border-slate-200';
+      return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${cls}">${status}</span>`;
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const colors = {
+        success: 'bg-emerald-900 border-emerald-700 text-white',
+        error: 'bg-rose-900 border-rose-700 text-white',
+        info: 'bg-slate-900 border-slate-700 text-white'
+      };
+      const icon = type === 'success' ? 'check-circle-2' : type === 'error' ? 'alert-circle' : 'info';
+
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-xl text-xs font-medium fade-in ${colors[type] || colors.info}`;
+      toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 text-amber-400 shrink-0"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(6px)';
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => toast.remove(), 250);
+      }, 3200);
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    // -----------------------------------------------------------------------
+    // 3. AUTHENTICATION & ROLE SWITCHING
+    // -----------------------------------------------------------------------
+    function toggleAuthView(target) {
+      document.getElementById('login-card').classList.toggle('hidden', target !== 'login');
+      document.getElementById('register-card').classList.toggle('hidden', target !== 'register');
+    }
+
+    document.getElementById('toggle-login-pwd').addEventListener('click', () => {
+      const pwd = document.getElementById('login-password');
+      pwd.type = pwd.type === 'password' ? 'text' : 'password';
+    });
+
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const role = document.getElementById('login-role').value;
+      enterAppWithRole(role);
+    });
+
+    document.getElementById('register-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const p1 = document.getElementById('reg-pass').value;
+      const p2 = document.getElementById('reg-pass-confirm').value;
+      if (p1 !== p2) {
+        showToast('Las contraseñas no coinciden', 'error');
+        return;
+      }
+      showToast('Cuenta creada exitosamente. Iniciando sesión...', 'success');
+      toggleAuthView('login');
+    });
+
+    function quickLogin(role) {
+      document.getElementById('login-role').value = role;
+      enterAppWithRole(role);
+    }
+
+    function enterAppWithRole(role) {
+      state.currentRole = role;
+      document.getElementById('auth-wrapper').classList.add('hidden');
+
+      if (role === 'Cliente') {
+        document.getElementById('workspace-app').classList.add('hidden');
+        document.getElementById('client-portal-app').classList.remove('hidden');
+        showToast('Bienvenido al Portal del Cliente, Juan Sebastián Osorio', 'success');
+      } else {
+        document.getElementById('client-portal-app').classList.add('hidden');
+        document.getElementById('workspace-app').classList.remove('hidden');
+        const isLawyer = role === 'Abogado';
+        document.getElementById('current-user-name').textContent = isLawyer ? 'Audis Ospino' : 'Carlos Serrano';
+        document.getElementById('current-user-role-badge').textContent = role;
+
+        const avatarEl = document.getElementById('current-user-avatar');
+        if (avatarEl) {
+          if (isLawyer) {
+            avatarEl.className = 'w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden border border-amber-400/50 bg-slate-800';
+            avatarEl.innerHTML = getAudisOspinoPortrait('w-10 h-10');
+          } else {
+            avatarEl.className = 'w-9 h-9 rounded-full bg-gradient-to-tr from-[#1E3A8A] to-blue-500 text-white font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden';
+            avatarEl.innerHTML = 'CS';
+          }
+        }
+
+        document.getElementById('workspace-role-switcher').value = role;
+        navigateTo('panel');
+        showToast(`Sesión iniciada como ${isLawyer ? 'Audis Ospino (Abogado)' : role}`, 'success');
+      }
+      lucide.createIcons();
+    }
+
+    function switchRoleFromWorkspace(newRole) {
+      enterAppWithRole(newRole);
+    }
+
+    function logout() {
+      document.getElementById('workspace-app').classList.add('hidden');
+      document.getElementById('client-portal-app').classList.add('hidden');
+      document.getElementById('auth-wrapper').classList.remove('hidden');
+      showToast('Sesión cerrada correctamente', 'info');
+    }
+
+    // -----------------------------------------------------------------------
+    // 4. NAVIGATION & GLOBAL SEARCH
+    // -----------------------------------------------------------------------
+    const pageMeta = {
+      panel: { title: 'Panel de Control', sub: 'Resumen ejecutivo de actividad jurídica y términos procesales' },
+      clientes: { title: 'Gestión de Clientes', sub: 'Directorio de personas naturales y jurídicas representadas' },
+      casos: { title: 'Casos y Expedientes', sub: 'Control visual por etapas procesales e historial de actuaciones' },
+      agenda: { title: 'Agenda y Calendario', sub: 'Programación de audiencias judiciales, conciliaciones y citas' },
+      facturacion: { title: 'Facturación y Honorarios', sub: 'Control de horas facturables y liquidación electrónica' },
+      reportes: { title: 'Reportes y Auditoría', sub: 'Monitoreo de accesos, seguridad y trazabilidad del sistema' },
+      notificaciones: { title: 'Centro de Notificaciones', sub: 'Alertas automatizadas de términos procesales y vencimientos' },
+      seguridad: { title: 'Seguridad y Permisos (RBAC)', sub: 'Matriz de control de acceso basado en roles' }
+    };
+
+    function navigateTo(viewId) {
+      state.currentView = viewId;
+      document.querySelectorAll('.workspace-view').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById(`view-${viewId}`);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        const isActive = btn.dataset.nav === viewId;
+        btn.className = isActive
+          ? 'nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition bg-[#1E3A8A] text-white shadow-sm'
+          : 'nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition';
+      });
+
+      if (pageMeta[viewId]) {
+        document.getElementById('page-title').textContent = pageMeta[viewId].title;
+        document.getElementById('page-subtitle').textContent = pageMeta[viewId].sub;
+      }
+
+      const sidebar = document.getElementById('main-sidebar');
+      if (!sidebar.classList.contains('-translate-x-full') && window.innerWidth < 1024) {
+        toggleMobileSidebar();
+      }
+
+      renderAll();
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('main-sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      sidebar.classList.toggle('-translate-x-full');
+      backdrop.classList.toggle('hidden');
+    }
+
+    function handleGlobalSearch(query) {
+      const q = query.trim().toLowerCase();
+      if (!q) {
+        renderDashboardCases();
+        return;
+      }
+      if (state.currentView !== 'panel') {
+        navigateTo('panel');
+      }
+      renderDashboardCases(q);
+    }
+
+    // -----------------------------------------------------------------------
+    // 5. MODULE RENDERERS
+    // -----------------------------------------------------------------------
+    function renderDashboardCases(searchQuery = '') {
+      const tbody = document.getElementById('dashboard-cases-tbody');
+      const filtered = state.cases.filter(c =>
+        c.id.toLowerCase().includes(searchQuery) ||
+        c.client.toLowerCase().includes(searchQuery) ||
+        c.type.toLowerCase().includes(searchQuery)
+      ).slice(0, 5);
+
+      tbody.innerHTML = filtered.map(c => `
+        <tr class="hover:bg-slate-50/90 transition">
+          <td class="py-3.5 px-4 font-semibold text-amber-600">${c.id}</td>
+          <td class="py-3.5 px-4 font-medium text-slate-900">${c.client}</td>
+          <td class="py-3.5 px-4 text-slate-600">${c.type}</td>
+          <td class="py-3.5 px-4">${getStatusBadge(c.status)}</td>
+          <td class="py-3.5 px-4 text-right">
+            <button onclick="inspectCaseFromDashboard('${c.id}')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#1E3A8A] bg-blue-50 hover:bg-blue-100 transition">
+              Ver detalle
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function inspectCaseFromDashboard(caseId) {
+      state.selectedCaseId = caseId;
+      navigateTo('casos');
+    }
+
+    // Module 2: Clients
+    function renderClientsTable() {
+      const q = (document.getElementById('client-search')?.value || '').toLowerCase();
+      const statusFilter = document.getElementById('client-status-filter')?.value || 'Todos';
+
+      const filtered = state.clients.filter(cl => {
+        const matchesQuery = cl.name.toLowerCase().includes(q) || cl.doc.includes(q) || cl.email.toLowerCase().includes(q);
+        const matchesStatus = statusFilter === 'Todos' || cl.status === statusFilter;
+        return matchesQuery && matchesStatus;
+      });
+
+      const tbody = document.getElementById('clients-tbody');
+      tbody.innerHTML = filtered.map(cl => {
+        const initials = cl.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3.5 px-5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 text-[#1E3A8A] font-bold text-xs flex items-center justify-center shrink-0">${initials}</div>
+                <div>
+                  <p class="font-semibold text-slate-900">${cl.name}</p>
+                  <p class="text-[11px] text-slate-500">${cl.company || 'Particular'}</p>
+                </div>
+              </div>
+            </td>
+            <td class="py-3.5 px-4 font-mono text-xs text-slate-700">${cl.doc}</td>
+            <td class="py-3.5 px-4 text-slate-600">${cl.phone}</td>
+            <td class="py-3.5 px-4 text-slate-600">${cl.email}</td>
+            <td class="py-3.5 px-4">${getStatusBadge(cl.status)}</td>
+            <td class="py-3.5 px-5 text-right">
+              <div class="inline-flex items-center gap-1.5">
+                <button onclick="showToast('Ficha de ${cl.name} cargada', 'info')" class="p-1.5 rounded-lg text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50 transition" title="Ver perfil">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+                <button onclick="toggleClientStatus(${cl.id})" class="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition" title="Cambiar estado">
+                  <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function toggleClientStatus(id) {
+      const client = state.clients.find(c => c.id === id);
+      if (client) {
+        client.status = client.status === 'Activo' ? 'Inactivo' : 'Activo';
+        renderClientsTable();
+        showToast(`Estado de ${client.name} actualizado a ${client.status}`, 'success');
+      }
+    }
+
+    document.getElementById('form-new-client').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById('nc-nombre').value.trim();
+      const apellido = document.getElementById('nc-apellido').value.trim();
+      const newClient = {
+        id: Date.now(),
+        name: `${nombre} ${apellido}`,
+        doc: document.getElementById('nc-doc').value.trim(),
+        phone: document.getElementById('nc-tel').value.trim(),
+        email: document.getElementById('nc-email').value.trim(),
+        company: document.getElementById('nc-company').value.trim() || 'Independiente',
+        status: document.getElementById('nc-status').value
+      };
+      state.clients.unshift(newClient);
+      closeModal('modal-new-client');
+      e.target.reset();
+      renderClientsTable();
+      showToast(`Cliente ${newClient.name} agregado exitosamente`, 'success');
+    });
+
+    // Module 3: Cases Kanban & Detail
+    function renderKanbanBoard() {
+      const columns = [
+        { key: 'Abierto', color: 'border-emerald-500', dot: 'bg-emerald-500' },
+        { key: 'En Trámite', color: 'border-blue-500', dot: 'bg-blue-500' },
+        { key: 'Suspendido', color: 'border-rose-500', dot: 'bg-rose-500' },
+        { key: 'Cerrado', color: 'border-slate-400', dot: 'bg-slate-400' }
+      ];
+
+      const board = document.getElementById('kanban-board');
+      board.innerHTML = columns.map(col => {
+        const colCases = state.cases.filter(c => c.status === col.key);
+        return `
+          <div class="bg-slate-100/80 rounded-2xl p-3.5 border border-slate-200/80 flex flex-col gap-3">
+            <div class="flex items-center justify-between px-1">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full ${col.dot}"></span>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">${col.key}</h3>
+              </div>
+              <span class="px-2 py-0.5 text-xs font-bold bg-white text-slate-700 rounded-full border border-slate-200">${colCases.length}</span>
+            </div>
+
+            <div class="space-y-2.5">
+              ${colCases.map(c => {
+                const isSelected = state.selectedCaseId === c.id;
+                return `
+                  <div onclick="selectCase('${c.id}')" class="cursor-pointer bg-white p-3.5 rounded-xl border-l-4 ${col.color} ${isSelected ? 'ring-2 ring-[#1E3A8A] shadow-md' : 'border border-slate-200 shadow-2xs hover:shadow-sm'} transition">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-bold text-amber-600">${c.id}</span>
+                      <select onclick="event.stopPropagation()" onchange="moveCaseStatus('${c.id}', this.value)" class="text-[10px] bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 text-slate-600">
+                        <option value="Abierto" ${c.status === 'Abierto' ? 'selected' : ''}>Abierto</option>
+                        <option value="En Trámite" ${c.status === 'En Trámite' ? 'selected' : ''}>En Trámite</option>
+                        <option value="Suspendido" ${c.status === 'Suspendido' ? 'selected' : ''}>Suspendido</option>
+                        <option value="Cerrado" ${c.status === 'Cerrado' ? 'selected' : ''}>Cerrado</option>
+                      </select>
+                    </div>
+                    <p class="text-sm font-bold text-slate-900 mt-1.5">${c.client}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">${c.type}</p>
+                    <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                      <span>${c.lawyer}</span>
+                      <span class="text-[#1E3A8A] font-medium">Ver historial →</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      renderCaseDetail();
+    }
+
+    function selectCase(id) {
+      state.selectedCaseId = id;
+      renderKanbanBoard();
+    }
+
+    function moveCaseStatus(id, newStatus) {
+      const c = state.cases.find(item => item.id === id);
+      if (c) {
+        c.status = newStatus;
+        renderKanbanBoard();
+        renderDashboardCases();
+        showToast(`Expediente ${id} movido a "${newStatus}"`, 'success');
+      }
+    }
+
+    function renderCaseDetail() {
+      const c = state.cases.find(item => item.id === state.selectedCaseId) || state.cases[0];
+      const panel = document.getElementById('case-detail-panel');
+      const isAudisOspino = (c.lawyer || '').toLowerCase().includes('audis ospino');
+
+      const lawyerBadgeHtml = isAudisOspino
+        ? `<span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 text-xs font-semibold text-slate-800 border border-slate-200">
+             ${getAudisOspinoPortrait('w-7 h-7')}
+             <span>Abogado: ${c.lawyer}</span>
+           </span>`
+        : `<span class="px-3 py-1.5 rounded-xl bg-slate-100 text-xs font-semibold text-slate-700">Abogado: ${c.lawyer}</span>`;
+
+      panel.innerHTML = `
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Detalle del Expediente</span>
+              ${getStatusBadge(c.status)}
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mt-1">${c.id} — ${c.client}</h3>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            ${lawyerBadgeHtml}
+            <span class="px-3 py-1.5 rounded-xl bg-amber-50 text-xs font-semibold text-amber-800 border border-amber-200">${c.type}</span>
+          </div>
+        </div>
+
+        <div class="mt-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Historial de Actuaciones Procesales</h4>
+            <div class="relative pl-6 border-l-2 border-blue-200 space-y-4">
+              ${c.timeline.map(act => `
+                <div class="relative">
+                  <span class="w-3 h-3 rounded-full bg-[#1E3A8A] ring-4 ring-blue-50 absolute -left-[31px] top-1"></span>
+                  <p class="text-sm font-bold text-slate-900">${act.title}</p>
+                  <p class="text-xs text-slate-500 mt-0.5">${act.date} • Registrado por ${act.author}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/70">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Registrar nueva actuación</h4>
+            <form onsubmit="addTimelineEntry(event, '${c.id}')" class="space-y-2.5">
+              <input type="text" id="new-act-title" required placeholder="Ej. Se radicó memorial de pruebas"
+                class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]" />
+              <button type="submit" class="w-full py-2 bg-[#1E3A8A] hover:bg-blue-900 text-white text-xs font-semibold rounded-xl transition">
+                + Añadir al historial
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    function addTimelineEntry(e, caseId) {
+      e.preventDefault();
+      const input = document.getElementById('new-act-title');
+      const title = input.value.trim();
+      if (!title) return;
+      const c = state.cases.find(item => item.id === caseId);
+      if (c) {
+        const authorName = state.currentRole === 'Abogado' ? 'Audis Ospino' : state.currentRole;
+        c.timeline.push({ title, date: 'Hoy • En vivo', author: authorName });
+        renderCaseDetail();
+        showToast('Actuación procesal agregada al expediente', 'success');
+      }
+    }
+
+    document.getElementById('form-new-case').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newCase = {
+        id: document.getElementById('case-code').value.trim(),
+        client: document.getElementById('case-client').value.trim(),
+        type: document.getElementById('case-type').value,
+        status: 'Abierto',
+        lawyer: document.getElementById('case-lawyer').value,
+        court: document.getElementById('case-court').value.trim(),
+        timeline: [{ title: 'Apertura y radicación inicial del expediente', date: 'Hoy', author: document.getElementById('case-lawyer').value }]
+      };
+      state.cases.unshift(newCase);
+      state.selectedCaseId = newCase.id;
+      document.getElementById('kpi-active-cases').textContent = parseInt(document.getElementById('kpi-active-cases').textContent) + 1;
+      closeModal('modal-new-case');
+      e.target.reset();
+      renderKanbanBoard();
+      renderDashboardCases();
+      showToast(`Expediente ${newCase.id} creado correctamente`, 'success');
+    });
+
+    // Module 4: Agenda
+    function renderAgenda() {
+      const days = ['Lun 14', 'Miér 16', 'Vier 18', 'Mar 22'];
+      const grid = document.getElementById('agenda-days-grid');
+
+      const filteredEvents = state.selectedLawyerFilter
+        ? state.events.filter(ev => ev.lawyer === state.selectedLawyerFilter)
+        : state.events;
+
+      grid.innerHTML = days.map(day => {
+        const dayEvents = filteredEvents.filter(ev => ev.day === day);
+        return `
+          <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/70 min-h-[160px]">
+            <p class="text-xs font-bold text-slate-700 pb-2 mb-2 border-b border-slate-200">${day}</p>
+            <div class="space-y-2">
+              ${dayEvents.length === 0 ? `<p class="text-[11px] text-slate-400 italic">Sin eventos</p>` : dayEvents.map(ev => {
+                const badgeColors = {
+                  'Audiencia': 'bg-blue-100 text-blue-900 border-blue-200',
+                  'Cita cliente': 'bg-emerald-100 text-emerald-900 border-emerald-200',
+                  'Conciliación': 'bg-amber-100 text-amber-900 border-amber-200'
+                };
+                return `
+                  <div class="p-2.5 rounded-lg border text-xs ${badgeColors[ev.type] || badgeColors['Audiencia']}">
+                    <span class="font-bold block">${ev.time} • ${ev.type}</span>
+                    <span class="text-[11px] opacity-85 block mt-0.5">${ev.lawyer}</span>
+                    <span class="text-[10px] opacity-75 block truncate">${ev.location}</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const list = document.getElementById('lawyers-availability-list');
+      list.innerHTML = state.lawyers.map(l => {
+        const isAvailable = l.status === 'Disponible';
+        const isFiltered = state.selectedLawyerFilter === l.name;
+        const portraitHtml = l.name === 'Audis Ospino' ? getAudisOspinoPortrait('w-8 h-8') : '';
+        return `
+          <div onclick="filterAgendaByLawyer('${l.name}')"
+            class="cursor-pointer p-3 rounded-xl border transition flex items-center justify-between gap-2 ${isFiltered ? 'bg-blue-50 border-[#1E3A8A]' : 'bg-slate-50 border-slate-200/70 hover:bg-slate-100'}">
+            <div class="flex items-center gap-2.5 min-w-0">
+              ${portraitHtml}
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-slate-900 truncate">${l.name}</p>
+                <p class="text-[11px] text-slate-500 truncate">${l.specialty}</p>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 ${isAvailable ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}">
+              <span class="w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+              ${l.status}
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterAgendaByLawyer(name) {
+      state.selectedLawyerFilter = state.selectedLawyerFilter === name ? null : name;
+      document.getElementById('clear-lawyer-filter').classList.toggle('hidden', !state.selectedLawyerFilter);
+      renderAgenda();
+    }
+
+    document.getElementById('form-new-event').addEventListener('submit', (e) => {
+      e.preventDefault();
+      state.events.push({
+        id: Date.now(),
+        day: document.getElementById('ev-day').value,
+        time: document.getElementById('ev-time').value,
+        type: document.getElementById('ev-type').value,
+        lawyer: document.getElementById('ev-lawyer').value,
+        location: document.getElementById('ev-location').value
+      });
+      closeModal('modal-new-event');
+      e.target.reset();
+      renderAgenda();
+      showToast('Evento programado en el calendario del equipo', 'success');
+    });
+
+    // Module 5: Billing
+    function renderBilling() {
+      const tbody = document.getElementById('billing-hours-tbody');
+      tbody.innerHTML = state.billingHours.map(row => {
+        const sub = row.hours * row.rate;
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-4 font-semibold text-slate-900">${row.lawyer}</td>
+            <td class="py-3 px-4 text-slate-600">${row.caseName}</td>
+            <td class="py-3 px-4 font-medium">${row.hours.toFixed(1)} hrs</td>
+            <td class="py-3 px-4 text-slate-500">${formatCOP(row.rate)}/h</td>
+            <td class="py-3 px-4 text-right font-semibold text-slate-900">${formatCOP(sub)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('form-new-hours').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const hrs = parseFloat(document.getElementById('hr-amount').value);
+      state.billingHours.unshift({
+        lawyer: document.getElementById('hr-lawyer').value,
+        caseName: document.getElementById('hr-case').value.trim(),
+        hours: hrs,
+        rate: parseInt(document.getElementById('hr-rate').value)
+      });
+      const currentTotal = parseFloat(document.getElementById('total-billed-hours').textContent);
+      document.getElementById('total-billed-hours').textContent = (currentTotal + hrs).toFixed(1);
+      closeModal('modal-new-hours');
+      e.target.reset();
+      renderBilling();
+      showToast('Registro de horas añadido a facturación', 'success');
+    });
+
+    function openInvoicePreview() {
+      openModal('modal-invoice-preview');
+    }
+
+    // Module 6: Audit Reports
+    function renderAuditTable() {
+      const roleF = document.getElementById('audit-role-filter')?.value || 'Todos';
+      const statusF = document.getElementById('audit-status-filter')?.value || 'Todos';
+
+      const filtered = state.auditLogs.filter(log => {
+        const matchRole = roleF === 'Todos' || log.role.includes(roleF);
+        const matchStatus = statusF === 'Todos' || log.type === statusF;
+        return matchRole && matchStatus;
+      });
+
+      const tbody = document.getElementById('audit-tbody');
+      tbody.innerHTML = filtered.map(log => {
+        const isOk = log.type === 'Exitoso';
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-4 font-mono text-xs font-bold text-slate-700">${log.id}</td>
+            <td class="py-3 px-4 font-medium text-slate-900">${log.user}</td>
+            <td class="py-3 px-4 text-slate-600">${log.role}</td>
+            <td class="py-3 px-4 text-slate-600">${log.action}</td>
+            <td class="py-3 px-4 text-slate-500 text-xs">${log.datetime}</td>
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${isOk ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}">
+                ${log.status}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportAuditCSV() {
+      showToast('Exportando reporte de auditoría (Auditoria_JurisApp_2026.csv)...', 'success');
+    }
+
+    // Module 7: Notifications
+    function renderNotifications() {
+      const list = document.getElementById('notifications-list');
+      const items = state.notifFilter === 'unread'
+        ? state.notifications.filter(n => n.unread)
+        : state.notifications;
+
+      const unreadCount = state.notifications.filter(n => n.unread).length;
+      const badge = document.getElementById('sidebar-notif-badge');
+      badge.textContent = unreadCount;
+      badge.classList.toggle('hidden', unreadCount === 0);
+
+      list.innerHTML = items.map(n => {
+        const icons = {
+          high: { icon: 'alert-octagon', bg: 'bg-rose-100 text-rose-600' },
+          info: { icon: 'calendar-check', bg: 'bg-blue-100 text-blue-700' },
+          warning: { icon: 'receipt', bg: 'bg-amber-100 text-amber-700' },
+          success: { icon: 'file-plus-2', bg: 'bg-emerald-100 text-emerald-700' }
+        };
+        const cfg = icons[n.priority] || icons.info;
+
+        return `
+          <div onclick="toggleNotifRead(${n.id})" class="cursor-pointer bg-white p-4 rounded-2xl border ${n.unread ? 'border-blue-300 shadow-xs' : 'border-slate-200 opacity-80'} flex items-start gap-4 transition hover:shadow-sm">
+            <div class="w-10 h-10 rounded-xl ${cfg.bg} flex items-center justify-center shrink-0">
+              <i data-lucide="${cfg.icon}" class="w-5 h-5"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h4 class="text-sm font-bold text-slate-900">${n.title}</h4>
+                <span class="text-[11px] text-slate-400 shrink-0">${n.time}</span>
+              </div>
+              <p class="text-xs text-slate-600 mt-1">${n.desc}</p>
+            </div>
+            ${n.unread ? '<span class="w-2.5 h-2.5 rounded-full bg-[#1E3A8A] mt-1.5 shrink-0"></span>' : ''}
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function filterNotifications(type) {
+      state.notifFilter = type;
+      document.getElementById('notif-filter-all').className = type === 'all'
+        ? 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#1E3A8A] text-white transition'
+        : 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+      document.getElementById('notif-filter-unread').className = type === 'unread'
+        ? 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#1E3A8A] text-white transition'
+        : 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+      renderNotifications();
+    }
+
+    function toggleNotifRead(id) {
+      const n = state.notifications.find(item => item.id === id);
+      if (n) {
+        n.unread = !n.unread;
+        renderNotifications();
+      }
+    }
+
+    function markAllNotificationsRead() {
+      state.notifications.forEach(n => n.unread = false);
+      renderNotifications();
+      showToast('Todas las notificaciones marcadas como leídas', 'success');
+    }
+
+    // Module 8: Security RBAC Matrix
+    function renderRBAC() {
+      const options = ['Ver / Editar', 'Solo Ver', 'Ver (Autorizados)', 'Sin Acceso'];
+      const tbody = document.getElementById('rbac-tbody');
+
+      tbody.innerHTML = state.rbac.map((row, idx) => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-4 px-5 font-semibold text-slate-900">${row.module}</td>
+          ${['admin', 'lawyer', 'client'].map(roleKey => `
+            <td class="py-4 px-4">
+              <select onchange="updateRBAC(${idx}, '${roleKey}', this.value)"
+                class="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]">
+                ${options.map(opt => `<option value="${opt}" ${row[roleKey] === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+              </select>
+            </td>
+          `).join('')}
+        </tr>
+      `).join('');
+    }
+
+    function updateRBAC(rowIndex, roleKey, newVal) {
+      state.rbac[rowIndex][roleKey] = newVal;
+    }
+
+    // Client Portal Tabs Feedback
+    function switchClientTab(tab) {
+      document.querySelectorAll('.ctab-btn').forEach(btn => {
+        const active = btn.dataset.ctab === tab;
+        btn.className = active
+          ? 'ctab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium bg-[#1E3A8A] text-white shrink-0'
+          : 'ctab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 shrink-0';
+      });
+      showToast(`Sección "${tab.toUpperCase()}" del Portal Cliente activa`, 'info');
+    }
+
+    // Master Render
+    function renderAll() {
+      renderDashboardCases();
+      renderClientsTable();
+      renderKanbanBoard();
+      renderAgenda();
+      renderBilling();
+      renderAuditTable();
+      renderNotifications();
+      renderRBAC();
+      lucide.createIcons();
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+    });
+  </script>
+</body>
+</html>
